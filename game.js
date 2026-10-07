@@ -1,3 +1,4 @@
+
 // ==========================================
 //   VENGEANCE — Load + Menu + Game + Attack
 // ==========================================
@@ -49,6 +50,7 @@ function makePixelTexture(scene, key, frame, palette) {
   const w = frame[0].length;
   const tex = scene.textures.createCanvas(key, w, h);
   const ctx = tex.getContext();
+  ctx.imageSmoothingEnabled = false;
   for (let y = 0; y < h; y++) {
     const row = frame[y];
     for (let x = 0; x < w; x++) {
@@ -91,51 +93,37 @@ class LoadScene extends Phaser.Scene {
 
     // Logs
     const logs = [
-      { x: cx - 15, y: H - 28, w: 26, h: 4, angle: -12, color: 0x1a0e08 },
-      { x: cx + 15, y: H - 28, w: 26, h: 4, angle: 12, color: 0x1a0e08 },
-      { x: cx - 6,  y: H - 32, w: 24, h: 4, angle: -4,  color: 0x2a1810 },
-      { x: cx + 6,  y: H - 32, w: 24, h: 4, angle: 4,   color: 0x2a1810 },
+      { x: cx - 18, y: H - 28, w: 30, h: 5, angle: -12, color: 0x1a0e08 },
+      { x: cx + 18, y: H - 28, w: 30, h: 5, angle: 12,  color: 0x1a0e08 },
+      { x: cx - 7,  y: H - 33, w: 28, h: 5, angle: -4,  color: 0x2a1810 },
+      { x: cx + 7,  y: H - 33, w: 28, h: 5, angle: 4,   color: 0x2a1810 },
     ];
     logs.forEach(l => {
       this.add.rectangle(l.x, l.y, l.w, l.h, l.color).setAngle(l.angle);
     });
 
-    this.createSword(cx, H - 30);
+    this.createSword(cx, H - 32);
 
     this.fireG = this.add.graphics();
     this.fireG.setDepth(1);
 
-    const barY = H - 18;
-    const barW = 100;
-    const barH = 2;
+    // Loading bar (thicker now)
+    const barY = H - 16;
+    const barW = 110;
+    const barH = 3;
     this.barW = barW;
     this.barH = barH;
-    this.add.rectangle(cx, barY, barW + 4, barH + 4, 0x1a1a1a);
-    this.add.rectangle(cx, barY, barW, barH, 0x000000);
+    this.add.rectangle(cx, barY, barW + 6, barH + 6, 0x1a1a1a);
+    this.add.rectangle(cx, barY, barW + 2, barH + 2, 0x000000);
     this.barFill = this.add.rectangle(cx - barW / 2, barY, 0, barH, 0x8b0000)
       .setOrigin(0, 0.5);
 
-    this.sentences = [
-      'Blood... only blood remains.',
-      'Vengeance waits.',
-      'Heavy blade? Good.',
-      'The dark follows close.',
-    ];
-    this.sentenceText = this.add.text(cx, H - 8, '', {
-      fontFamily: 'monospace',
-      fontSize: '8px',
-      color: '#6a4030',
-    }).setOrigin(0.5);
-
+    // State
     this.progress = 0;
     this.elapsed = 0;
     this.duration = 2800;
     this.fireTime = 0;
-    this.sentenceIdx = 0;
-    this.sentenceTimer = 0;
     this.finished = false;
-    this.sentenceText.setAlpha(0);
-    this.sentenceText.setText(this.sentences[0]);
 
     this.cameras.main.fadeIn(400, 0, 0, 0);
   }
@@ -145,29 +133,42 @@ class LoadScene extends Phaser.Scene {
     container.setDepth(2);
 
     const g = this.add.graphics();
-    const blade = 0xb8b8b8;
-    const bladeDark = 0x707070;
+    const blade = 0xd0d0d0;
+    const bladeDark = 0x808080;
+    const bladeEdge = 0xffffff;
     const guard = 0x7a4a20;
     const hilt = 0x1a0e08;
 
+    // Hilt
     g.fillStyle(hilt, 1);
-    g.fillRect(-1, 6, 2, 8);
+    g.fillRect(-1, 8, 3, 10);
 
+    // Pommel
     g.fillStyle(guard, 1);
-    g.fillRect(-4, 5, 8, 2);
+    g.fillRect(-2, 17, 5, 3);
 
-    for (let i = 0; i < 28; i++) {
-      const py = 5 - i;
+    // Guard
+    g.fillStyle(guard, 1);
+    g.fillRect(-6, 6, 13, 3);
+
+    // Blade — slightly thicker and taller
+    const bladeLen = 34;
+    for (let i = 0; i < bladeLen; i++) {
+      const py = 6 - i;
       let px = -1;
-      if (i >= 22) px = -2;
-      if (i >= 25) px = -3;
-      g.fillStyle(i < 2 ? bladeDark : blade, 1);
-      g.fillRect(px, py, 2, 1);
-    }
+      let w = 3;
 
-    g.fillStyle(0xffffff, 0.35);
-    for (let i = 3; i < 22; i++) {
-      g.fillRect(-1, 5 - i, 1, 1);
+      // Curve the tip
+      if (i >= bladeLen - 8) { px = -2; w = 4; }
+      if (i >= bladeLen - 5) { px = -3; w = 5; }
+      if (i >= bladeLen - 2) { px = -4; w = 6; }
+
+      g.fillStyle(i < 3 ? bladeDark : blade, 1);
+      g.fillRect(px, py, w, 1);
+
+      // Bright highlight on right edge
+      g.fillStyle(bladeEdge, 0.9);
+      g.fillRect(px + w - 1, py, 1, 1);
     }
 
     container.add(g);
@@ -182,19 +183,6 @@ class LoadScene extends Phaser.Scene {
 
     this.fireTime += delta;
     this.drawFire(this.progress);
-
-    this.sentenceTimer += delta;
-    if (this.sentenceTimer < 200) {
-      this.sentenceText.setAlpha(this.sentenceTimer / 200);
-    } else if (this.sentenceTimer < 900) {
-      this.sentenceText.setAlpha(1);
-    } else if (this.sentenceTimer < 1200) {
-      this.sentenceText.setAlpha((1200 - this.sentenceTimer) / 300);
-    } else {
-      this.sentenceTimer = 0;
-      this.sentenceIdx = (this.sentenceIdx + 1) % this.sentences.length;
-      this.sentenceText.setText(this.sentences[this.sentenceIdx]);
-    }
 
     if (this.progress >= 1 && !this.finished) {
       this.finished = true;
@@ -212,42 +200,44 @@ class LoadScene extends Phaser.Scene {
     g.clear();
 
     const cx = GAME_WIDTH / 2;
-    const baseY = GAME_HEIGHT - 30;
+    const baseY = GAME_HEIGHT - 32;
     const t = this.fireTime / 100;
-    const intensity = 0.6 + level * 0.5;
+    const intensity = 0.7 + level * 0.6;
 
-    const columns = 9;
+    // Chunkier fire: fewer columns but wider pixels
+    const columns = 7;
     for (let i = 0; i < columns; i++) {
-      const offset = (i - columns / 2) * 2;
+      const offset = (i - (columns - 1) / 2) * 3;
       const x = cx + offset;
 
       const noise = Math.sin(t + i * 1.3) * 0.5 + Math.sin(t * 2.1 + i * 0.7) * 0.5;
-      const centerFalloff = 1 - Math.abs(offset) / 10;
-      const baseHeight = 10 + noise * 4 + (i % 2) * 2;
-      const height = Math.max(2, baseHeight * intensity * centerFalloff);
+      const centerFalloff = 1 - Math.abs(offset) / 14;
+      const baseHeight = 14 + noise * 5 + (i % 2) * 2;
+      const height = Math.max(3, baseHeight * intensity * centerFalloff);
 
       for (let h = 0; h < height; h++) {
         const y = baseY - h;
         const frac = h / height;
 
         let color;
-        if (frac < 0.25) color = 0xffdd44;
-        else if (frac < 0.5) color = 0xff8800;
-        else if (frac < 0.75) color = 0xcc3300;
-        else if (frac < 0.9) color = 0x661100;
-        else color = 0x221100;
+        if (frac < 0.2)       color = 0xffe066;
+        else if (frac < 0.45) color = 0xffaa22;
+        else if (frac < 0.7)  color = 0xff5500;
+        else if (frac < 0.88) color = 0x992200;
+        else                  color = 0x331100;
 
         g.fillStyle(color, 1);
-        g.fillRect(Math.floor(x), Math.floor(y), 2, 1);
+        g.fillRect(Math.floor(x), Math.floor(y), 3, 2);
       }
     }
 
-    const sparkCount = Math.floor(3 * level);
+    // Sparks (bigger and brighter)
+    const sparkCount = Math.floor(4 * level);
     for (let i = 0; i < sparkCount; i++) {
-      const sparkX = cx + Math.sin(t * 3 + i * 2.1) * 8;
-      const sparkY = baseY - 15 - ((this.fireTime / 100 + i * 7) % 20);
-      g.fillStyle(0xffaa00, 0.8);
-      g.fillRect(Math.floor(sparkX), Math.floor(sparkY), 1, 1);
+      const sparkX = cx + Math.sin(t * 3 + i * 2.1) * 12;
+      const sparkY = baseY - 18 - ((this.fireTime / 100 + i * 9) % 24);
+      g.fillStyle(0xffcc33, 1);
+      g.fillRect(Math.floor(sparkX), Math.floor(sparkY), 2, 2);
     }
   }
 }
@@ -369,7 +359,6 @@ class GameScene extends Phaser.Scene {
 
     this.physics.add.collider(this.player, ground);
 
-    // Slash graphic (always in scene, hidden when idle)
     this.slashG = this.add.graphics();
     this.slashG.setDepth(10);
 
@@ -383,7 +372,6 @@ class GameScene extends Phaser.Scene {
       ESC: Phaser.Input.Keyboard.KeyCodes.ESC,
     });
 
-    // Mouse click attack
     this.input.on('pointerdown', () => {
       this.tryAttack();
     });
@@ -391,15 +379,13 @@ class GameScene extends Phaser.Scene {
     this.MOVE_SPEED = 90;
     this.JUMP_VELOCITY = -280;
 
-    // Attack state
     this.attacking = false;
     this.attackTimer = 0;
-    this.ATTACK_DURATION = 250;   // total lock duration
-    this.SLASH_VISIBLE = 130;     // how long slash graphic shows
+    this.ATTACK_DURATION = 250;
+    this.SLASH_VISIBLE = 130;
     this.attackCooldown = 0;
-    this.COOLDOWN = 80;           // extra pause after attack
+    this.COOLDOWN = 80;
 
-    // Hint
     this.add.text(6, 6, 'A/D move   Space jump   J attack   ESC menu', {
       fontFamily: 'monospace',
       fontSize: '7px',
@@ -418,21 +404,17 @@ class GameScene extends Phaser.Scene {
     const body = this.player.body;
     const onGround = body.blocked.down || body.touching.down;
 
-    // Attack input
     if (Phaser.Input.Keyboard.JustDown(this.keys.J)) {
       this.tryAttack();
     }
 
-    // Cooldown ticking
     if (this.attackCooldown > 0) {
       this.attackCooldown -= delta;
     }
 
-    // ---- Attack state machine ----
     if (this.attacking) {
       this.attackTimer += delta;
 
-      // Draw slash during the visible window
       if (this.attackTimer <= this.SLASH_VISIBLE) {
         const p = this.attackTimer / this.SLASH_VISIBLE;
         this.drawSlash(p);
@@ -447,11 +429,9 @@ class GameScene extends Phaser.Scene {
       }
     }
 
-    // ---- Movement ----
     const left  = this.cursors.left.isDown  || this.keys.A.isDown;
     const right = this.cursors.right.isDown || this.keys.D.isDown;
 
-    // Slow down while attacking (souls-like weight)
     const speedMul = this.attacking ? 0.25 : 1;
     const speed = this.MOVE_SPEED * speedMul;
 
@@ -465,7 +445,6 @@ class GameScene extends Phaser.Scene {
       body.setVelocityX(0);
     }
 
-    // ---- Jump (blocked while attacking) ----
     const jumpPressed =
       Phaser.Input.Keyboard.JustDown(this.cursors.space) ||
       Phaser.Input.Keyboard.JustDown(this.keys.SPACE) ||
@@ -475,7 +454,6 @@ class GameScene extends Phaser.Scene {
       body.setVelocityY(this.JUMP_VELOCITY);
     }
 
-    // ---- Back to menu ----
     if (Phaser.Input.Keyboard.JustDown(this.keys.ESC)) {
       this.scene.start('Menu');
     }
@@ -489,15 +467,12 @@ class GameScene extends Phaser.Scene {
     const py = this.player.y;
     const dir = this.player.flipX ? -1 : 1;
 
-    // Size: grows then shrinks (sin curve) → feels like a swipe
     const grow = Math.sin(progress * Math.PI);
     const outerR = 6 + 20 * grow;
     const innerR = 3 + 8  * grow;
 
-    // Alpha: fades out toward the end
     const alpha = Math.max(0, 1 - progress * 0.7);
 
-    // Fan sweep: from -55° to +55°
     const startA = -0.95;
     const endA   =  0.95;
     const cols   = 14;
@@ -505,29 +480,24 @@ class GameScene extends Phaser.Scene {
     for (let i = 0; i <= cols; i++) {
       const a = startA + (endA - startA) * (i / cols);
 
-      // Outer bright edge
       const ox = px + Math.cos(a) * outerR * dir;
       const oy = py + Math.sin(a) * outerR;
 
-      // Inner dim fill
       const rsteps = Math.max(1, Math.floor(outerR - innerR));
       for (let s = 0; s < rsteps; s++) {
         const r = innerR + s;
         const ix = px + Math.cos(a) * r * dir;
         const iy = py + Math.sin(a) * r;
 
-        // Fill: dimmer toward inner
         const fillAlpha = alpha * (0.35 + 0.4 * (s / rsteps));
         g.fillStyle(0xaaaaaa, fillAlpha);
         g.fillRect(Math.round(ix), Math.round(iy), 1, 1);
       }
 
-      // Bright outer edge
       g.fillStyle(0xffffff, alpha);
       g.fillRect(Math.round(ox), Math.round(oy), 2, 2);
     }
 
-    // Tiny spark at the tip of the blade
     if (progress > 0.15 && progress < 0.7) {
       const tipA = (dir > 0 ? endA : startA);
       const tipX = px + Math.cos(tipA) * outerR * dir;
@@ -548,6 +518,8 @@ const config = {
   parent: 'game',
   pixelArt: true,
   roundPixels: true,
+  antialias: false,
+  antialiasGL: false,
   backgroundColor: '#0a0a0a',
   scale: {
     mode: Phaser.Scale.FIT,
