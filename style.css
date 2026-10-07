@@ -32,25 +32,18 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background:
-    radial-gradient(circle at 50% 40%, #1a0505 0%, #0a0202 45%, #000 100%);
+  background: radial-gradient(circle at 50% 40%, #1a0505 0%, #0a0202 45%, #000 100%);
   z-index: 100;
 }
 
-.start-inner {
-  text-align: center;
-  padding: 20px;
-}
+.start-inner { text-align: center; padding: 20px; }
 
 .game-title {
   font-size: 64px;
   font-weight: 900;
   letter-spacing: 6px;
   color: #c01d1d;
-  text-shadow:
-    0 0 10px #ff2a2a,
-    0 0 30px #8b0000,
-    0 4px 0 #300;
+  text-shadow: 0 0 10px #ff2a2a, 0 0 30px #8b0000, 0 4px 0 #300;
   margin-bottom: 12px;
   animation: titlePulse 3s ease-in-out infinite;
 }
@@ -115,13 +108,48 @@ html, body {
   image-rendering: pixelated;
 }
 
+/* ============ دکمه همبرگر ============ */
+#hamburgerBtn {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  background: rgba(20, 5, 5, 0.75);
+  border: 2px solid rgba(160, 30, 30, 0.7);
+  border-radius: 10px;
+  cursor: pointer;
+  z-index: 20;
+  box-shadow: 0 0 15px rgba(200, 40, 40, 0.3);
+  transition: all 0.15s ease;
+}
+
+#hamburgerBtn:active {
+  transform: scale(0.94);
+  background: rgba(60, 10, 10, 0.9);
+  box-shadow: 0 0 25px rgba(255, 60, 60, 0.6);
+}
+
+#hamburgerBtn span {
+  display: block;
+  width: 26px;
+  height: 3px;
+  background: #e8e8e8;
+  border-radius: 2px;
+  box-shadow: 0 0 4px rgba(255, 80, 80, 0.6);
+}
+
 /* ============ ناحیه کنترل ============ */
 #controlsArea {
   position: relative;
   width: 100%;
   height: 35%;
-  background:
-    linear-gradient(180deg, #0a0505 0%, #050202 100%);
+  background: linear-gradient(180deg, #0a0505 0%, #050202 100%);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -129,7 +157,6 @@ html, body {
   padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
-/* ---- جوی‌استیک ---- */
 #joystickArea {
   width: 150px;
   height: 150px;
@@ -161,7 +188,6 @@ html, body {
   transition: transform 0.05s linear;
 }
 
-/* ---- دکمه حمله ---- */
 #attackArea {
   width: 150px;
   height: 150px;
@@ -189,4 +215,194 @@ html, body {
   transform: scale(0.92);
   background: radial-gradient(circle at 35% 30%, #9a1a1a 0%, #550808 60%, #200303 100%);
   box-shadow: 0 0 40px rgba(255, 60, 60, 0.9), inset 0 0 20px rgba(255, 100, 100, 0.4);
+}
+
+/* ============ منوی کشویی ============ */
+.side-menu {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.side-menu-inner {
+  width: 280px;
+  max-width: 80%;
+  height: 100%;
+  padding: 30px 20px;
+  background: linear-gradient(180deg, #1a0606 0%, #0a0202 100%);
+  border-left: 2px solid #7a1a1a;
+  box-shadow: 5px 0 30px rgba(180, 20, 20, 0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: slideIn 0.25s ease;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0); }
+}
+
+.side-menu-title {
+  font-size: 22px;
+  color: #c01d1d;
+  letter-spacing: 3px;
+  text-align: center;
+  margin-bottom: 20px;
+  text-shadow: 0 0 10px rgba(255, 40, 40, 0.5);
+}
+
+.side-menu-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  font-size: 16px;
+  font-family: inherit;
+  color: #ddd;
+  background: rgba(30, 8, 8, 0.6);
+  border: 1.5px solid #5a1010;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: right;
+  width: 100%;
+}
+
+.side-menu-btn:active {
+  background: rgba(90, 15, 15, 0.9);
+  border-color: #c02020;
+  transform: translateX(-3px);
+  box-shadow: 0 0 20px rgba(220, 40, 40, 0.5);
+}
+
+.side-menu-btn.danger {
+  border-color: #8a1a1a;
+  color: #ffb0b0;
+}
+
+.side-menu-btn.danger:active {
+  background: rgba(140, 20, 20, 0.9);
+  box-shadow: 0 0 25px rgba(255, 60, 60, 0.7);
+}
+
+.side-menu-close {
+  margin-top: auto;
+  padding: 12px;
+  font-family: inherit;
+  font-size: 15px;
+  color: #aaa;
+  background: transparent;
+  border: 1.5px solid #333;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.side-menu-close:active {
+  background: rgba(60, 60, 60, 0.4);
+  color: #fff;
+}
+
+/* ============ دیالوگ تأیید ============ */
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.15s ease;
+}
+
+.dialog-box {
+  width: 300px;
+  max-width: 85%;
+  padding: 24px 20px;
+  background: linear-gradient(180deg, #1a0606 0%, #0a0202 100%);
+  border: 2px solid #7a1a1a;
+  border-radius: 10px;
+  box-shadow: 0 0 40px rgba(200, 30, 30, 0.5);
+  text-align: center;
+}
+
+.dialog-box p {
+  font-size: 17px;
+  color: #e0e0e0;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.dialog-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.dialog-btn {
+  flex: 1;
+  padding: 12px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1.5px solid;
+}
+
+.dialog-btn.yes {
+  color: #fff;
+  background: rgba(150, 20, 20, 0.8);
+  border-color: #c02020;
+}
+
+.dialog-btn.yes:active {
+  background: rgba(200, 30, 30, 1);
+  box-shadow: 0 0 20px rgba(255, 60, 60, 0.7);
+}
+
+.dialog-btn.no {
+  color: #ccc;
+  background: rgba(40, 40, 40, 0.6);
+  border-color: #444;
+}
+
+.dialog-btn.no:active {
+  background: rgba(70, 70, 70, 0.8);
+}
+
+/* ============ Toast ============ */
+.toast {
+  position: fixed;
+  bottom: 40%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 24px;
+  background: rgba(20, 5, 5, 0.95);
+  color: #e8e8e8;
+  border: 1.5px solid #a02020;
+  border-radius: 8px;
+  font-size: 15px;
+  z-index: 400;
+  box-shadow: 0 0 25px rgba(220, 40, 40, 0.5);
+  animation: toastIn 0.3s ease;
+  pointer-events: none;
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translate(-50%, 10px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
 }
