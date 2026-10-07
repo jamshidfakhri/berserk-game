@@ -5,7 +5,6 @@ html, body {
   height: 100%;
   background: #000;
   overflow: hidden;
-  font-family: monospace;
 }
 
 #game {
@@ -17,6 +16,9 @@ html, body {
 }
 
 #game canvas {
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
+  image-rendering: pixelated !important;
+  image-rendering: crisp-edges !important;
+  image-rendering: -moz-crisp-edges !important;
+  -ms-interpolation-mode: nearest-neighbor;
+  display: block;
 }
