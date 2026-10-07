@@ -1,4 +1,3 @@
-
 // ==========================================
 //   VENGEANCE — Load + Menu + Game + Attack
 // ==========================================
@@ -107,7 +106,7 @@ class LoadScene extends Phaser.Scene {
     this.fireG = this.add.graphics();
     this.fireG.setDepth(1);
 
-    // Loading bar (thicker now)
+    // Loading bar
     const barY = H - 16;
     const barW = 110;
     const barH = 3;
@@ -139,26 +138,21 @@ class LoadScene extends Phaser.Scene {
     const guard = 0x7a4a20;
     const hilt = 0x1a0e08;
 
-    // Hilt
     g.fillStyle(hilt, 1);
     g.fillRect(-1, 8, 3, 10);
 
-    // Pommel
     g.fillStyle(guard, 1);
     g.fillRect(-2, 17, 5, 3);
 
-    // Guard
     g.fillStyle(guard, 1);
     g.fillRect(-6, 6, 13, 3);
 
-    // Blade — slightly thicker and taller
     const bladeLen = 34;
     for (let i = 0; i < bladeLen; i++) {
       const py = 6 - i;
       let px = -1;
       let w = 3;
 
-      // Curve the tip
       if (i >= bladeLen - 8) { px = -2; w = 4; }
       if (i >= bladeLen - 5) { px = -3; w = 5; }
       if (i >= bladeLen - 2) { px = -4; w = 6; }
@@ -166,7 +160,6 @@ class LoadScene extends Phaser.Scene {
       g.fillStyle(i < 3 ? bladeDark : blade, 1);
       g.fillRect(px, py, w, 1);
 
-      // Bright highlight on right edge
       g.fillStyle(bladeEdge, 0.9);
       g.fillRect(px + w - 1, py, 1, 1);
     }
@@ -204,7 +197,6 @@ class LoadScene extends Phaser.Scene {
     const t = this.fireTime / 100;
     const intensity = 0.7 + level * 0.6;
 
-    // Chunkier fire: fewer columns but wider pixels
     const columns = 7;
     for (let i = 0; i < columns; i++) {
       const offset = (i - (columns - 1) / 2) * 3;
@@ -231,7 +223,6 @@ class LoadScene extends Phaser.Scene {
       }
     }
 
-    // Sparks (bigger and brighter)
     const sparkCount = Math.floor(4 * level);
     for (let i = 0; i < sparkCount; i++) {
       const sparkX = cx + Math.sin(t * 3 + i * 2.1) * 12;
@@ -256,17 +247,15 @@ class MenuScene extends Phaser.Scene {
     this.cameras.main.fadeIn(300, 0, 0, 0);
 
     this.add.text(cx, cy - 30, 'VENGEANCE', {
-      fontFamily: 'monospace',
-      fontSize: '22px',
+      fontFamily: '"Press Start 2P", monospace',
+      fontSize: '16px',
       color: '#8b0000',
-      fontStyle: 'bold',
     }).setOrigin(0.5);
 
     this.add.text(cx, cy - 8, 'A tale written in blood', {
-      fontFamily: 'monospace',
-      fontSize: '7px',
+      fontFamily: '"Press Start 2P", monospace',
+      fontSize: '6px',
       color: '#5a3a20',
-      fontStyle: 'italic',
     }).setOrigin(0.5);
 
     const items = [
@@ -279,8 +268,8 @@ class MenuScene extends Phaser.Scene {
     this.menuItems = [];
     items.forEach((it, i) => {
       const t = this.add.text(cx, it.y, it.text, {
-        fontFamily: 'monospace',
-        fontSize: '9px',
+        fontFamily: '"Press Start 2P", monospace',
+        fontSize: '7px',
         color: i === 0 ? '#c8a878' : '#5a5a5a',
       }).setOrigin(0.5);
       this.menuItems.push(t);
@@ -289,14 +278,14 @@ class MenuScene extends Phaser.Scene {
     this.selected = 0;
 
     this.add.text(cx, GAME_HEIGHT - 10, 'v0.1', {
-      fontFamily: 'monospace',
-      fontSize: '7px',
+      fontFamily: '"Press Start 2P", monospace',
+      fontSize: '6px',
       color: '#444444',
     }).setOrigin(0.5);
 
     this.add.text(cx, GAME_HEIGHT - 2, 'W/S + Enter', {
-      fontFamily: 'monospace',
-      fontSize: '6px',
+      fontFamily: '"Press Start 2P", monospace',
+      fontSize: '5px',
       color: '#333333',
     }).setOrigin(0.5);
 
@@ -386,9 +375,9 @@ class GameScene extends Phaser.Scene {
     this.attackCooldown = 0;
     this.COOLDOWN = 80;
 
-    this.add.text(6, 6, 'A/D move   Space jump   J attack   ESC menu', {
-      fontFamily: 'monospace',
-      fontSize: '7px',
+    this.add.text(6, 6, 'A/D move  Space jump  J attack  ESC menu', {
+      fontFamily: '"Press Start 2P", monospace',
+      fontSize: '6px',
       color: '#3a3a3a',
     }).setDepth(20);
   }
@@ -520,6 +509,11 @@ const config = {
   roundPixels: true,
   antialias: false,
   antialiasGL: false,
+  render: {
+    pixelArt: true,
+    antialias: false,
+    roundPixels: true,
+  },
   backgroundColor: '#0a0a0a',
   scale: {
     mode: Phaser.Scale.FIT,
