@@ -1,6 +1,5 @@
 /* ============================================
-   Vengeance — Base Game
-   حرکت + حمله + دوربین اسکرول + نقشه + نور
+   Vengeance — Base Game + Menu
    ============================================ */
 
 const canvas = document.getElementById('gameCanvas');
@@ -21,13 +20,8 @@ function resize() {
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 }
 
-// ============ دنیا (نقشه) ============
-const WORLD = {
-  w: 0,
-  h: 0,
-  tile: 90,
-  mult: 5, // ۵ برابر صفحه
-};
+// ============ دنیا ============
+const WORLD = { w: 0, h: 0, tile: 90, mult: 5 };
 
 function initWorld() {
   WORLD.w = W * WORLD.mult;
@@ -35,18 +29,13 @@ function initWorld() {
 }
 
 // ============ دوربین ============
-const camera = {
-  x: 0,
-  y: 0,
-  lerp: 0.09,
-};
+const camera = { x: 0, y: 0, lerp: 0.09 };
 
 function updateCamera() {
   const tx = player.x - W / 2;
   const ty = player.y - H / 2;
   camera.x += (tx - camera.x) * camera.lerp;
   camera.y += (ty - camera.y) * camera.lerp;
-  // محدود به لبه‌های نقشه
   camera.x = Math.max(0, Math.min(WORLD.w - W, camera.x));
   camera.y = Math.max(0, Math.min(WORLD.h - H, camera.y));
 }
@@ -56,7 +45,7 @@ const player = {
   x: 0, y: 0,
   r: 16,
   speed: 4.2,
-  angle: -Math.PI / 2, // رو به بالا
+  angle: -Math.PI / 2,
   attackTimer: 0,
   attackCooldown: 0,
   attackDuration: 14,
@@ -65,13 +54,19 @@ const player = {
 
 function initPlayer() {
   player.x = WORLD.w / 2;
-  player.y = WORLD.h * 0.7; // پایین‌تر از وسط
+  player.y = WORLD.h * 0.7;
   player.angle = -Math.PI / 2;
   player.attackTimer = 0;
   player.attackCooldown = 0;
   camera.x = player.x - W / 2;
   camera.y = player.y - H / 2;
 }
+
+// ============ وضعیت بازی ============
+const gameState = {
+  running: false,
+  paused: false, // وقتی منو یا دیالوگ بازه
+};
 
 // ============ ورودی ============
 const input = { moveX: 0, moveY: 0 };
@@ -101,7 +96,7 @@ function readKeyboard() {
   }
 }
 
-// ============ جوی‌استیک لمسی ============
+// ============ جوی‌استیک ============
 const joyBase = document.getElementById('joyBase');
 const joyKnob = document.getElementById('joyKnob');
 
@@ -114,6 +109,7 @@ const joystick = {
 };
 
 function joyStart(e) {
+  if (gameState.paused) return;
   e.preventDefault();
   if (joystick.active) return;
   const t = e.changedTouches ? e.changedTouches[0] : e;
@@ -173,7 +169,6 @@ document.addEventListener('touchmove', joyMove, { passive: false });
 document.addEventListener('touchend', joyEnd);
 document.addEventListener('touchcancel', joyEnd);
 
-// ماوس (برای تست روی کامپیوتر)
 joyBase.addEventListener('mousedown', joyStart);
 window.addEventListener('mousemove', joyMove);
 window.addEventListener('mouseup', joyEnd);
@@ -181,13 +176,16 @@ window.addEventListener('mouseup', joyEnd);
 // ============ دکمه حمله ============
 const attackBtn = document.getElementById('attackBtn');
 
-attackBtn.addEventListener('touchstart', (e) => {
+function attackBtnPress(e) {
+  if (gameState.paused) return;
   e.preventDefault();
   attackBtn.classList.add('pressed');
   doAttack();
-}, { passive: false });
+}
+
+attackBtn.addEventListener('touchstart', attackBtnPress, { passive: false });
 attackBtn.addEventListener('touchend', () => attackBtn.classList.remove('pressed'));
-attackBtn.addEventListener('mousedown', (e) => { e.preventDefault(); doAttack(); });
+attackBtn.addEventListener('mousedown', attackBtnPress);
 attackBtn.addEventListener('mouseup', () => attackBtn.classList.remove('pressed'));
 
 function doAttack() {
@@ -198,21 +196,16 @@ function doAttack() {
 
 // ============ آپدیت ============
 function updatePlayer() {
-  // حرکت
   player.x += input.moveX * player.speed;
   player.y += input.moveY * player.speed;
-
-  // محدودیت نقشه
   player.x = Math.max(player.r, Math.min(WORLD.w - player.r, player.x));
   player.y = Math.max(player.r, Math.min(WORLD.h - player.r, player.y));
 
-  // چرخش (اگه حمله نمی‌کنه)
   const moving = Math.abs(input.moveX) > 0.05 || Math.abs(input.moveY) > 0.05;
   if (moving && player.attackTimer <= 0) {
     player.angle = Math.atan2(input.moveY, input.moveX);
   }
 
-  // تایمرها
   if (player.attackTimer > 0) player.attackTimer--;
   if (player.attackCooldown > 0) player.attackCooldown--;
 }
@@ -223,7 +216,7 @@ function update() {
   updateCamera();
 }
 
-// ============ رسم: کف سنگی ============
+// ============ رسم ============
 function drawFloor() {
   const ts = WORLD.tile;
   const startX = Math.floor(camera.x / ts) * ts;
@@ -233,17 +226,14 @@ function drawFloor() {
 
   for (let x = startX; x < endX; x += ts) {
     for (let y = startY; y < endY; y += ts) {
-      // شبه‌رندوم ثابت بر اساس مکان
       const seed = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
       const r = seed - Math.floor(seed);
       const shade = Math.floor(22 + r * 10);
-
       ctx.fillStyle = `rgb(${shade}, ${shade - 2}, ${shade - 2})`;
       ctx.fillRect(x - camera.x, y - camera.y, ts - 1.5, ts - 1.5);
     }
   }
 
-  // خطوط تیره‌ی اتصال کاشی‌ها
   ctx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
   ctx.lineWidth = 1;
   for (let x = startX; x < endX; x += ts) {
@@ -260,12 +250,10 @@ function drawFloor() {
   }
 }
 
-// ============ رسم: بازیکن ============
 function drawPlayer() {
   const px = player.x - camera.x;
   const py = player.y - camera.y;
 
-  // هاله زیر بازیکن
   const halo = ctx.createRadialGradient(px, py, 5, px, py, player.r * 3);
   halo.addColorStop(0, 'rgba(200, 40, 40, 0.35)');
   halo.addColorStop(1, 'rgba(200, 40, 40, 0)');
@@ -274,12 +262,10 @@ function drawPlayer() {
   ctx.arc(px, py, player.r * 3, 0, Math.PI * 2);
   ctx.fill();
 
-  // مثلث بازیکن
   ctx.save();
   ctx.translate(px, py);
   ctx.rotate(player.angle);
 
-  // سایه تیره زیر
   ctx.beginPath();
   ctx.moveTo(20, 0);
   ctx.lineTo(-12, -14);
@@ -288,7 +274,6 @@ function drawPlayer() {
   ctx.fillStyle = '#000';
   ctx.fill();
 
-  // بدنه
   ctx.beginPath();
   ctx.moveTo(18, 0);
   ctx.lineTo(-11, -13);
@@ -300,7 +285,6 @@ function drawPlayer() {
   ctx.lineWidth = 2;
   ctx.stroke();
 
-  // درخشش لبه
   ctx.beginPath();
   ctx.moveTo(18, 0);
   ctx.lineTo(-11, -13);
@@ -311,14 +295,13 @@ function drawPlayer() {
   ctx.restore();
 }
 
-// ============ رسم: حمله ============
 function drawAttack() {
   if (player.attackTimer <= 0) return;
 
   const px = player.x - camera.x;
   const py = player.y - camera.y;
-  const t = player.attackTimer / player.attackDuration; // 1 → 0
-  const eased = Math.pow(t, 0.6); // سریع اول، کند آخر
+  const t = player.attackTimer / player.attackDuration;
+  const eased = Math.pow(t, 0.6);
 
   ctx.save();
   ctx.translate(px, py);
@@ -327,7 +310,6 @@ function drawAttack() {
   const arcR = 68;
   const spread = 0.95 * eased;
 
-  // هاله‌ی قرمز بیرونی
   ctx.beginPath();
   ctx.arc(0, 0, arcR, -spread, spread);
   ctx.strokeStyle = `rgba(200, 20, 20, ${eased * 0.9})`;
@@ -335,14 +317,12 @@ function drawAttack() {
   ctx.lineCap = 'round';
   ctx.stroke();
 
-  // خط سفید روشن روی آن
   ctx.beginPath();
   ctx.arc(0, 0, arcR, -spread, spread);
   ctx.strokeStyle = `rgba(255, 255, 255, ${eased})`;
   ctx.lineWidth = 3;
   ctx.stroke();
 
-  // ذرات کوچک
   for (let i = 0; i < 3; i++) {
     const a = (Math.random() - 0.5) * spread * 2;
     const rr = arcR + (Math.random() - 0.5) * 15;
@@ -357,7 +337,6 @@ function drawAttack() {
   ctx.restore();
 }
 
-// ============ رسم: تاریکی + هاله نور ============
 function drawDarkness() {
   const px = player.x - camera.x;
   const py = player.y - camera.y;
@@ -373,7 +352,6 @@ function drawDarkness() {
   ctx.fillRect(0, 0, W, H);
 }
 
-// ============ رسم: وینیت ============
 function drawVignette() {
   const grad = ctx.createRadialGradient(W/2, H/2, Math.min(W, H) * 0.4, W/2, H/2, Math.max(W, H) * 0.75);
   grad.addColorStop(0, 'rgba(0,0,0,0)');
@@ -382,7 +360,6 @@ function drawVignette() {
   ctx.fillRect(0, 0, W, H);
 }
 
-// ============ رندر ============
 function draw() {
   ctx.fillStyle = '#000';
   ctx.fillRect(0, 0, W, H);
@@ -394,15 +371,13 @@ function draw() {
   drawVignette();
 }
 
-// ============ حلقه اصلی ============
-let running = false;
-let lastTime = 0;
-
-function loop(t) {
-  if (!running) return;
-  lastTime = t;
-  update();
-  draw();
+// ============ حلقه ============
+function loop() {
+  if (!gameState.running) return;
+  if (!gameState.paused) {
+    update();
+    draw();
+  }
   requestAnimationFrame(loop);
 }
 
@@ -411,29 +386,123 @@ function startGame() {
   document.getElementById('startScreen').classList.add('hidden');
   document.getElementById('gameScreen').classList.remove('hidden');
 
-  // صبر کن لِی‌اوت اعمال شه بعد اندازه بگیر
   requestAnimationFrame(() => {
     setTimeout(() => {
       resize();
       initWorld();
       initPlayer();
-      running = true;
-      lastTime = performance.now();
+      gameState.running = true;
+      gameState.paused = false;
       requestAnimationFrame(loop);
     }, 60);
   });
 }
 
+// ============ منوی کناری ============
+const hamburgerBtn = document.getElementById('hamburgerBtn');
+const sideMenu = document.getElementById('sideMenu');
+const sideMenuClose = document.getElementById('sideMenuClose');
+
+function openSideMenu() {
+  sideMenu.classList.remove('hidden');
+  gameState.paused = true;
+}
+
+function closeSideMenu() {
+  sideMenu.classList.add('hidden');
+  gameState.paused = false;
+}
+
+hamburgerBtn.addEventListener('click', openSideMenu);
+sideMenuClose.addEventListener('click', closeSideMenu);
+
+// بستن با کلیک روی پس‌زمینه
+sideMenu.addEventListener('click', (e) => {
+  if (e.target === sideMenu) closeSideMenu();
+});
+
+// ============ دیالوگ تأیید ============
+const confirmDialog = document.getElementById('confirmDialog');
+const confirmText = document.getElementById('confirmText');
+const confirmYes = document.getElementById('confirmYes');
+const confirmNo = document.getElementById('confirmNo');
+
+let confirmCallback = null;
+
+function showConfirm(text, onYes) {
+  confirmText.textContent = text;
+  confirmCallback = onYes;
+  confirmDialog.classList.remove('hidden');
+  gameState.paused = true;
+}
+
+function hideConfirm() {
+  confirmDialog.classList.add('hidden');
+  confirmCallback = null;
+  // اگه منو بسته بود، unpause
+  if (sideMenu.classList.contains('hidden')) {
+    gameState.paused = false;
+  }
+}
+
+confirmYes.addEventListener('click', () => {
+  const cb = confirmCallback;
+  hideConfirm();
+  if (cb) cb();
+});
+
+confirmNo.addEventListener('click', hideConfirm);
+
+// ============ Toast ============
+const toast = document.getElementById('toast');
+let toastTimer = null;
+
+function showToast(msg, duration = 1800) {
+  toast.textContent = msg;
+  toast.classList.remove('hidden');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.add('hidden'), duration);
+}
+
+// ============ اکشن‌های منو ============
+document.querySelectorAll('.side-menu-btn').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const action = btn.dataset.action;
+
+    if (action === 'save') {
+      // فعلاً فقط پیام — بعداً واقعی می‌شه
+      showToast('💾 ذخیره شد (بزودی واقعی می‌شه)');
+    }
+
+    if (action === 'settings') {
+      showToast('⚙️ تنظیمات بزودی اضافه می‌شه');
+    }
+
+    if (action === 'exit') {
+      showConfirm('از بازی خارج شی و برگردی به منو؟', () => {
+        exitToMenu();
+      });
+    }
+  });
+});
+
+function exitToMenu() {
+  gameState.running = false;
+  gameState.paused = false;
+  sideMenu.classList.add('hidden');
+  document.getElementById('gameScreen').classList.add('hidden');
+  document.getElementById('startScreen').classList.remove('hidden');
+}
+
 // ============ رویدادها ============
 document.getElementById('startBtn').addEventListener('click', startGame);
+
 window.addEventListener('resize', () => {
-  if (!running) return;
+  if (!gameState.running) return;
   resize();
-  // نقشه رو دست نمی‌زنیم ولی بازیکن رو دوباره clamp می‌کنیم
   player.x = Math.max(player.r, Math.min(WORLD.w - player.r, player.x));
   player.y = Math.max(player.r, Math.min(WORLD.h - player.r, player.y));
 });
 
-// جلوگیری از زوم و اسکرول روی موبایل
 document.addEventListener('gesturestart', (e) => e.preventDefault());
 document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: false });
