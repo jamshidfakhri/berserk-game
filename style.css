@@ -6,6 +6,11 @@ html, body {
   background: #000;
   overflow: hidden;
   font-family: monospace;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
 }
 
 #game {
