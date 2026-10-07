@@ -9,8 +9,16 @@
 </head>
 <body>
 
+<!-- ===== صفحه لودینگ ===== -->
+<div id="loadingScreen" class="screen">
+  <canvas id="loadingCanvas"></canvas>
+  <div id="loadingBarContainer">
+    <div id="loadingBarFill"></div>
+  </div>
+</div>
+
 <!-- ===== صفحه شروع ===== -->
-<div id="startScreen" class="screen">
+<div id="startScreen" class="screen hidden">
   <div class="start-inner">
     <h1 class="game-title">Vengeance</h1>
     <p class="game-sub">انتقام آغاز می‌شود</p>
@@ -21,17 +29,13 @@
 <!-- ===== صفحه بازی ===== -->
 <div id="gameScreen" class="screen hidden">
 
-  <!-- ناحیه بازی (۶۵٪ بالا) -->
   <div id="gameArea">
     <canvas id="gameCanvas"></canvas>
-
-    <!-- دکمه سه‌خط بالا چپ -->
     <button id="hamburgerBtn" aria-label="منو">
       <span></span><span></span><span></span>
     </button>
   </div>
 
-  <!-- ناحیه کنترل (۳۵٪ پایین) -->
   <div id="controlsArea">
     <div id="joystickArea">
       <div id="joyBase">
@@ -75,7 +79,7 @@
   </div>
 </div>
 
-<!-- ===== پیام کوتاه (Toast) ===== -->
+<!-- ===== Toast ===== -->
 <div id="toast" class="toast hidden"></div>
 
 <script src="game.js"></script>
