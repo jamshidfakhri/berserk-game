@@ -531,7 +531,7 @@ const config = {
   },
   backgroundColor: '#0a0a0a',
   scale: {
-    mode: Phaser.Scale.FIT,
+    mode: Phaser.Scale.ENVELOP,
     autoCenter: Phaser.Scale.CENTER_BOTH,
   },
   physics: {
