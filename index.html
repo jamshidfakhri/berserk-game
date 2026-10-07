@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Dark Fantasy</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="hud">
+    <span>❤️ <span id="hp">100</span></span>
+    <span>⚔️ <span id="score">0</span></span>
+    <span>🌊 موج <span id="wave">1</span></span>
+  </div>
+  <canvas id="game"></canvas>
+  <div id="gameover" class="hidden">
+    <h1>کشته شدی</h1>
+    <p>امتیاز: <span id="finalScore">0</span></p>
+    <button onclick="restart()">شروع دوباره</button>
+  </div>
+  <script src="game.js"></script>
+</body>
+</html>
