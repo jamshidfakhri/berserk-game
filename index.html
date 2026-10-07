@@ -13,11 +13,16 @@
     <span>🌊 موج <span id="wave">1</span></span>
     <span>🔥 <span id="rage">0</span></span>
   </div>
+  <div id="topLeft">
+    <span>🏆 <span id="best">0</span></span>
+    <button id="pauseBtn" onclick="togglePause()">⏸️</button>
+  </div>
   <canvas id="game"></canvas>
   <div id="gameover" class="hidden">
     <h1>کشته شدی</h1>
     <p>امتیاز: <span id="finalScore">0</span></p>
     <p>موج رسیده: <span id="finalWave">1</span></p>
+    <p>بهترین: <span id="bestScore">0</span></p>
     <button onclick="restart()">شروع دوباره</button>
   </div>
   <script src="game.js"></script>
