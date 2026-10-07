@@ -1,11 +1,11 @@
 // ==========================================
-//   VENGEANCE — Load + Menu + Game
+//   VENGEANCE — Load + Menu + Game (English)
 // ==========================================
 
 const GAME_WIDTH  = 320;
 const GAME_HEIGHT = 180;
 
-// ---------- پالت ----------
+// ---------- Palette ----------
 const PALETTE = {
   o: '#0a0a0a',
   a: '#1a1410',
@@ -16,7 +16,7 @@ const PALETTE = {
   f: '#c9986f',
 };
 
-// ---------- اسپرایت شخصیت (16x24) ----------
+// ---------- Hero sprite (16x24) ----------
 const HERO_IDLE = [
   '................',
   '.....oooooo.....',
@@ -85,11 +85,11 @@ class LoadScene extends Phaser.Scene {
 
     this.cameras.main.setBackgroundColor('#000000');
 
-    // ----- زمین -----
+    // ----- Ground -----
     this.add.rectangle(0, H - 25, W, 25, 0x050505).setOrigin(0, 0);
     this.add.rectangle(0, H - 25, W, 1, 0x1a0e08).setOrigin(0, 0);
 
-    // ----- چوب‌ها -----
+    // ----- Logs -----
     const logs = [
       { x: cx - 15, y: H - 28, w: 26, h: 4, angle: -12, color: 0x1a0e08 },
       { x: cx + 15, y: H - 28, w: 26, h: 4, angle: 12, color: 0x1a0e08 },
@@ -100,14 +100,14 @@ class LoadScene extends Phaser.Scene {
       this.add.rectangle(l.x, l.y, l.w, l.h, l.color).setAngle(l.angle);
     });
 
-    // ----- شمشیر کج -----
+    // ----- Sword -----
     this.createSword(cx, H - 30);
 
-    // ----- آتیش -----
+    // ----- Fire -----
     this.fireG = this.add.graphics();
     this.fireG.setDepth(1);
 
-    // ----- بار لودینگ -----
+    // ----- Loading bar -----
     const barY = H - 18;
     const barW = 100;
     const barH = 2;
@@ -118,11 +118,12 @@ class LoadScene extends Phaser.Scene {
     this.barFill = this.add.rectangle(cx - barW / 2, barY, 0, barH, 0x8b0000)
       .setOrigin(0, 0.5);
 
-    // ----- جمله‌ها -----
+    // ----- Loading sentences (English) -----
     this.sentences = [
-      'خون، فقط خون می‌مونه...',
-      'انتقام صبر می‌کنه.',
-      'شمشیرت سنگینه؟ خوبه.',
+      'Blood... only blood remains.',
+      'Vengeance waits.',
+      'Heavy blade? Good.',
+      'The dark follows close.',
     ];
     this.sentenceText = this.add.text(cx, H - 8, '', {
       fontFamily: 'monospace',
@@ -130,7 +131,7 @@ class LoadScene extends Phaser.Scene {
       color: '#6a4030',
     }).setOrigin(0.5);
 
-    // ----- متغیرها -----
+    // ----- State -----
     this.progress = 0;
     this.elapsed = 0;
     this.duration = 2800;
@@ -139,6 +140,7 @@ class LoadScene extends Phaser.Scene {
     this.sentenceTimer = 0;
     this.finished = false;
     this.sentenceText.setAlpha(0);
+    this.sentenceText.setText(this.sentences[0]);
 
     this.cameras.main.fadeIn(400, 0, 0, 0);
   }
@@ -153,15 +155,15 @@ class LoadScene extends Phaser.Scene {
     const guard = 0x7a4a20;
     const hilt = 0x1a0e08;
 
-    // دسته (پایین)
+    // Hilt
     g.fillStyle(hilt, 1);
     g.fillRect(-1, 6, 2, 8);
 
-    // گارد
+    // Guard
     g.fillStyle(guard, 1);
     g.fillRect(-4, 5, 8, 2);
 
-    // تیغه - با نوک کج به چپ
+    // Blade with bent tip to the left
     for (let i = 0; i < 28; i++) {
       const py = 5 - i;
       let px = -1;
@@ -171,7 +173,7 @@ class LoadScene extends Phaser.Scene {
       g.fillRect(px, py, 2, 1);
     }
 
-    // لبه‌ی روشن تیغه
+    // Blade highlight
     g.fillStyle(0xffffff, 0.35);
     for (let i = 3; i < 22; i++) {
       g.fillRect(-1, 5 - i, 1, 1);
@@ -190,7 +192,7 @@ class LoadScene extends Phaser.Scene {
     this.fireTime += delta;
     this.drawFire(this.progress);
 
-    // چرخش جمله‌ها
+    // Sentence cycling
     this.sentenceTimer += delta;
     if (this.sentenceTimer < 200) {
       this.sentenceText.setAlpha(this.sentenceTimer / 200);
@@ -204,7 +206,7 @@ class LoadScene extends Phaser.Scene {
       this.sentenceText.setText(this.sentences[this.sentenceIdx]);
     }
 
-    // پایان
+    // Finish
     if (this.progress >= 1 && !this.finished) {
       this.finished = true;
       this.time.delayedCall(150, () => {
@@ -251,7 +253,7 @@ class LoadScene extends Phaser.Scene {
       }
     }
 
-    // جرقه‌ها
+    // Sparks
     const sparkCount = Math.floor(3 * level);
     for (let i = 0; i < sparkCount; i++) {
       const sparkX = cx + Math.sin(t * 3 + i * 2.1) * 8;
@@ -263,7 +265,7 @@ class LoadScene extends Phaser.Scene {
 }
 
 // ==========================================
-//   Scene: Menu (موقت)
+//   Scene: Menu
 // ==========================================
 class MenuScene extends Phaser.Scene {
   constructor() { super('Menu'); }
@@ -275,29 +277,92 @@ class MenuScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor('#0a0a0a');
     this.cameras.main.fadeIn(300, 0, 0, 0);
 
-    this.add.text(cx, cy - 20, 'VENGEANCE', {
+    // Title
+    this.add.text(cx, cy - 30, 'VENGEANCE', {
       fontFamily: 'monospace',
       fontSize: '22px',
       color: '#8b0000',
       fontStyle: 'bold',
     }).setOrigin(0.5);
 
-    this.add.text(cx, cy + 10, '▶ شروع بازی جدید', {
+    // Subtitle
+    this.add.text(cx, cy - 8, 'A tale written in blood', {
       fontFamily: 'monospace',
-      fontSize: '10px',
-      color: '#aaaaaa',
+      fontSize: '7px',
+      color: '#5a3a20',
+      fontStyle: 'italic',
     }).setOrigin(0.5);
 
+    // Menu items
+    const items = [
+      { text: '> New Game',     y: cy + 12 },
+      { text: '  Continue',     y: cy + 24 },
+      { text: '  Settings',     y: cy + 36 },
+      { text: '  Best Score',   y: cy + 48 },
+    ];
+
+    this.menuItems = [];
+    items.forEach((it, i) => {
+      const t = this.add.text(cx, it.y, it.text, {
+        fontFamily: 'monospace',
+        fontSize: '9px',
+        color: i === 0 ? '#c8a878' : '#5a5a5a',
+      }).setOrigin(0.5);
+      this.menuItems.push(t);
+    });
+
+    this.selected = 0;
+
+    // Version
     this.add.text(cx, GAME_HEIGHT - 10, 'v0.1', {
       fontFamily: 'monospace',
       fontSize: '7px',
       color: '#444444',
     }).setOrigin(0.5);
 
-    // با هر کلیدی → بازی
-    this.input.keyboard.once('keydown', () => {
-      this.scene.start('Game');
+    // Hint
+    this.add.text(cx, GAME_HEIGHT - 2, 'W/S + Enter', {
+      fontFamily: 'monospace',
+      fontSize: '6px',
+      color: '#333333',
+    }).setOrigin(0.5);
+
+    // Input
+    this.cursors = this.input.keyboard.createCursorKeys();
+    this.keys = this.input.keyboard.addKeys({
+      W: Phaser.Input.Keyboard.KeyCodes.W,
+      S: Phaser.Input.Keyboard.KeyCodes.S,
+      ENTER: Phaser.Input.Keyboard.KeyCodes.ENTER,
+      SPACE: Phaser.Input.Keyboard.KeyCodes.SPACE,
     });
+  }
+
+  updateSelection() {
+    this.menuItems.forEach((t, i) => {
+      const raw = t.text.replace(/^[> ]/, '');
+      t.setText((i === this.selected ? '> ' : '  ') + raw);
+      t.setColor(i === this.selected ? '#c8a878' : '#5a5a5a');
+    });
+  }
+
+  update() {
+    if (Phaser.Input.Keyboard.JustDown(this.cursors.up) ||
+        Phaser.Input.Keyboard.JustDown(this.keys.W)) {
+      this.selected = (this.selected - 1 + this.menuItems.length) % this.menuItems.length;
+      this.updateSelection();
+    }
+    if (Phaser.Input.Keyboard.JustDown(this.cursors.down) ||
+        Phaser.Input.Keyboard.JustDown(this.keys.S)) {
+      this.selected = (this.selected + 1) % this.menuItems.length;
+      this.updateSelection();
+    }
+    if (Phaser.Input.Keyboard.JustDown(this.keys.ENTER) ||
+        Phaser.Input.Keyboard.JustDown(this.keys.SPACE)) {
+      if (this.selected === 0) {
+        this.scene.start('Game');
+      }
+      // Other items: coming soon
+    }
   }
 }
 
@@ -329,6 +394,7 @@ class GameScene extends Phaser.Scene {
       D: Phaser.Input.Keyboard.KeyCodes.D,
       W: Phaser.Input.Keyboard.KeyCodes.W,
       SPACE: Phaser.Input.Keyboard.KeyCodes.SPACE,
+      ESC: Phaser.Input.Keyboard.KeyCodes.ESC,
     });
 
     this.MOVE_SPEED = 90;
@@ -359,6 +425,11 @@ class GameScene extends Phaser.Scene {
 
     if (jumpPressed && onGround) {
       body.setVelocityY(this.JUMP_VELOCITY);
+    }
+
+    // ESC → back to menu
+    if (Phaser.Input.Keyboard.JustDown(this.keys.ESC)) {
+      this.scene.start('Menu');
     }
   }
 }
