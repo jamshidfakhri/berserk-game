@@ -1,30 +1,45 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Dark Fantasy</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<title>Vengeance</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="hud">
-    <span>❤️ <span id="hp">100</span></span>
-    <span>⚔️ <span id="score">0</span></span>
-    <span>🌊 موج <span id="wave">1</span></span>
-    <span>🔥 <span id="rage">0</span></span>
+
+<!-- ===== صفحه شروع ===== -->
+<div id="startScreen" class="screen">
+  <div class="start-inner">
+    <h1 class="game-title">Vengeance</h1>
+    <p class="game-sub">انتقام آغاز می‌شود</p>
+    <button id="startBtn" class="menu-btn">▶ شروع بازی</button>
   </div>
-  <div id="topLeft">
-    <span>🏆 <span id="best">0</span></span>
-    <button id="pauseBtn" onclick="togglePause()">⏸️</button>
+</div>
+
+<!-- ===== صفحه بازی ===== -->
+<div id="gameScreen" class="screen hidden">
+
+  <!-- ناحیه بازی (۶۵٪ بالا) -->
+  <div id="gameArea">
+    <canvas id="gameCanvas"></canvas>
   </div>
-  <canvas id="game"></canvas>
-  <div id="gameover" class="hidden">
-    <h1>کشته شدی</h1>
-    <p>امتیاز: <span id="finalScore">0</span></p>
-    <p>موج رسیده: <span id="finalWave">1</span></p>
-    <p>بهترین: <span id="bestScore">0</span></p>
-    <button onclick="restart()">شروع دوباره</button>
+
+  <!-- ناحیه کنترل (۳۵٪ پایین) -->
+  <div id="controlsArea">
+    <div id="joystickArea">
+      <div id="joyBase">
+        <div id="joyKnob"></div>
+      </div>
+    </div>
+    <div id="attackArea">
+      <button id="attackBtn">⚔️</button>
+    </div>
   </div>
-  <script src="game.js"></script>
+
+</div>
+
+<script src="game.js"></script>
 </body>
 </html>
