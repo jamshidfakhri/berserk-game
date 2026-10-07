@@ -11,19 +11,12 @@ html, body {
 #game {
   width: 100vw;
   height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  overflow: hidden;
 }
 
 #game canvas {
-  image-rendering: pixelated !important;
-  image-rendering: crisp-edges !important;
-  image-rendering: -moz-crisp-edges !important;
-  -ms-interpolation-mode: nearest-neighbor;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  image-rendering: -moz-crisp-edges;
   display: block;
-  width: auto !important;
-  height: auto !important;
-  max-width: 100%;
-  max-height: 100%;
 }
