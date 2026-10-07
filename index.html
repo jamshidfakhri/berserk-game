@@ -1,87 +1,14 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="fa" dir="ltr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#000000">
-<title>Vengeance</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vengeance</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
 </head>
 <body>
-
-<!-- ===== صفحه لودینگ ===== -->
-<div id="loadingScreen" class="screen">
-  <canvas id="loadingCanvas"></canvas>
-  <div id="loadingBarContainer">
-    <div id="loadingBarFill"></div>
-  </div>
-</div>
-
-<!-- ===== صفحه شروع ===== -->
-<div id="startScreen" class="screen hidden">
-  <div class="start-inner">
-    <h1 class="game-title">Vengeance</h1>
-    <p class="game-sub">انتقام آغاز می‌شود</p>
-    <button id="startBtn" class="menu-btn">▶ شروع بازی</button>
-  </div>
-</div>
-
-<!-- ===== صفحه بازی ===== -->
-<div id="gameScreen" class="screen hidden">
-
-  <div id="gameArea">
-    <canvas id="gameCanvas"></canvas>
-    <button id="hamburgerBtn" aria-label="منو">
-      <span></span><span></span><span></span>
-    </button>
-  </div>
-
-  <div id="controlsArea">
-    <div id="joystickArea">
-      <div id="joyBase">
-        <div id="joyKnob"></div>
-      </div>
-    </div>
-    <div id="attackArea">
-      <button id="attackBtn">⚔️</button>
-    </div>
-  </div>
-
-</div>
-
-<!-- ===== منوی کشویی ===== -->
-<div id="sideMenu" class="side-menu hidden">
-  <div class="side-menu-inner">
-    <h2 class="side-menu-title">منو</h2>
-
-    <button class="side-menu-btn" data-action="save">
-      💾 <span>ذخیره بازی</span>
-    </button>
-    <button class="side-menu-btn" data-action="settings">
-      ⚙️ <span>تنظیمات</span>
-    </button>
-    <button class="side-menu-btn danger" data-action="exit">
-      🚪 <span>خروج به منو</span>
-    </button>
-
-    <button id="sideMenuClose" class="side-menu-close">✕ بستن</button>
-  </div>
-</div>
-
-<!-- ===== دیالوگ تأیید ===== -->
-<div id="confirmDialog" class="dialog-overlay hidden">
-  <div class="dialog-box">
-    <p id="confirmText">مطمئنی؟</p>
-    <div class="dialog-buttons">
-      <button id="confirmYes" class="dialog-btn yes">بله</button>
-      <button id="confirmNo" class="dialog-btn no">خیر</button>
-    </div>
-  </div>
-</div>
-
-<!-- ===== Toast ===== -->
-<div id="toast" class="toast hidden"></div>
-
-<script src="game.js"></script>
+  <div id="game"></div>
+  <script src="game.js"></script>
 </body>
 </html>
