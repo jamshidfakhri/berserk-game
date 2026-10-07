@@ -62,6 +62,15 @@ function makePixelTexture(scene, key, frame, palette) {
   tex.refresh();
 }
 
+// ---------- Fix blurry text on all scenes ----------
+function fixTextResolution(scene) {
+  scene.children.list.forEach(obj => {
+    if (obj.type === 'Text' && obj.setResolution) {
+      obj.setResolution(4);
+    }
+  });
+}
+
 // ==========================================
 //   Scene: Boot
 // ==========================================
@@ -69,6 +78,7 @@ class BootScene extends Phaser.Scene {
   constructor() { super('Boot'); }
   create() {
     makePixelTexture(this, 'hero', HERO_IDLE, PALETTE);
+    fixTextResolution(this);
     this.scene.start('Load');
   }
 }
@@ -125,6 +135,7 @@ class LoadScene extends Phaser.Scene {
     this.finished = false;
 
     this.cameras.main.fadeIn(400, 0, 0, 0);
+    fixTextResolution(this);
   }
 
   createSword(x, y) {
@@ -296,6 +307,8 @@ class MenuScene extends Phaser.Scene {
       ENTER: Phaser.Input.Keyboard.KeyCodes.ENTER,
       SPACE: Phaser.Input.Keyboard.KeyCodes.SPACE,
     });
+
+    fixTextResolution(this);
   }
 
   updateSelection() {
@@ -380,6 +393,8 @@ class GameScene extends Phaser.Scene {
       fontSize: '6px',
       color: '#3a3a3a',
     }).setDepth(20);
+
+    fixTextResolution(this);
   }
 
   tryAttack() {
