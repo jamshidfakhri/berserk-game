@@ -1,83 +1,192 @@
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
 
 html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: #0a0a0a;
-  font-family: Tahoma, sans-serif;
-  color: #d4c5a0;
+  background: #000;
+  color: #e0e0e0;
+  font-family: 'Georgia', 'Tahoma', serif;
   touch-action: none;
+  overscroll-behavior: none;
 }
 
-canvas {
-  display: block;
-  background: #1a0f0f;
-}
+.hidden { display: none !important; }
 
-#hud {
-  position: fixed;
-  top: 12px;
-  right: 16px;
-  display: flex;
-  gap: 14px;
-  font-size: 15px;
-  z-index: 10;
-  text-shadow: 0 0 6px #000;
-}
-
-#topLeft {
-  position: fixed;
-  top: 12px;
-  left: 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 15px;
-  z-index: 10;
-  text-shadow: 0 0 6px #000;
-}
-
-#pauseBtn {
-  padding: 6px 12px;
-  font-size: 16px;
-  background: rgba(58, 26, 26, 0.7);
-  color: #d4c5a0;
-  border: 1px solid #6a3a3a;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-#gameover {
+.screen {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.85);
+  width: 100%;
+  height: 100%;
+}
+
+/* ============ صفحه شروع ============ */
+#startScreen {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  z-index: 20;
+  background:
+    radial-gradient(circle at 50% 40%, #1a0505 0%, #0a0202 45%, #000 100%);
+  z-index: 100;
 }
 
-#gameover.hidden { display: none; }
-
-#gameover h1 {
-  color: #a02020;
-  font-size: 42px;
-  text-shadow: 0 0 12px #500;
+.start-inner {
+  text-align: center;
+  padding: 20px;
 }
 
-#gameover p { font-size: 18px; }
+.game-title {
+  font-size: 64px;
+  font-weight: 900;
+  letter-spacing: 6px;
+  color: #c01d1d;
+  text-shadow:
+    0 0 10px #ff2a2a,
+    0 0 30px #8b0000,
+    0 4px 0 #300;
+  margin-bottom: 12px;
+  animation: titlePulse 3s ease-in-out infinite;
+}
 
-button {
-  padding: 12px 24px;
+@keyframes titlePulse {
+  0%, 100% { text-shadow: 0 0 10px #ff2a2a, 0 0 30px #8b0000, 0 4px 0 #300; }
+  50%      { text-shadow: 0 0 20px #ff4a4a, 0 0 60px #b00000, 0 4px 0 #300; }
+}
+
+.game-sub {
   font-size: 16px;
-  background: #3a1a1a;
-  color: #d4c5a0;
-  border: 1px solid #6a3a3a;
-  border-radius: 6px;
-  cursor: pointer;
+  color: #8a2020;
+  letter-spacing: 4px;
+  margin-bottom: 50px;
+  font-style: italic;
 }
 
-button:hover { background: #5a2a2a; }
+.menu-btn {
+  display: block;
+  margin: 0 auto;
+  padding: 16px 48px;
+  font-size: 20px;
+  font-family: inherit;
+  font-weight: bold;
+  letter-spacing: 2px;
+  color: #e8e8e8;
+  background: linear-gradient(180deg, #2a0a0a 0%, #1a0505 100%);
+  border: 2px solid #7a1a1a;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 0 20px rgba(180, 20, 20, 0.3);
+}
+
+.menu-btn:hover, .menu-btn:active {
+  background: linear-gradient(180deg, #4a1010 0%, #2a0808 100%);
+  border-color: #c02020;
+  box-shadow: 0 0 30px rgba(220, 40, 40, 0.6);
+  transform: scale(1.03);
+}
+
+/* ============ صفحه بازی ============ */
+#gameScreen {
+  display: flex;
+  flex-direction: column;
+  background: #000;
+}
+
+#gameArea {
+  position: relative;
+  width: 100%;
+  height: 65%;
+  overflow: hidden;
+  background: #000;
+  border-bottom: 2px solid #1a0505;
+}
+
+#gameCanvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+
+/* ============ ناحیه کنترل ============ */
+#controlsArea {
+  position: relative;
+  width: 100%;
+  height: 35%;
+  background:
+    linear-gradient(180deg, #0a0505 0%, #050202 100%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+/* ---- جوی‌استیک ---- */
+#joystickArea {
+  width: 150px;
+  height: 150px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+#joyBase {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(30, 10, 10, 0.6) 0%, rgba(10, 2, 2, 0.8) 100%);
+  border: 2px solid rgba(120, 20, 20, 0.5);
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 0 0 15px rgba(150, 20, 20, 0.2);
+}
+
+#joyKnob {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 60px;
+  height: 60px;
+  margin: -30px 0 0 -30px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #5a1010 0%, #2a0505 70%, #100202 100%);
+  border: 2px solid #8a1a1a;
+  box-shadow: 0 0 15px rgba(200, 30, 30, 0.5), inset 0 0 8px rgba(255, 60, 60, 0.3);
+  pointer-events: none;
+  transition: transform 0.05s linear;
+}
+
+/* ---- دکمه حمله ---- */
+#attackArea {
+  width: 150px;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+#attackBtn {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  font-size: 48px;
+  color: #fff;
+  background: radial-gradient(circle at 35% 30%, #6a0a0a 0%, #350505 60%, #150202 100%);
+  border: 3px solid #a02020;
+  box-shadow: 0 0 25px rgba(220, 40, 40, 0.5), inset 0 0 15px rgba(255, 80, 80, 0.2);
+  cursor: pointer;
+  transition: transform 0.08s ease, box-shadow 0.1s ease;
+  font-family: inherit;
+}
+
+#attackBtn:active, #attackBtn.pressed {
+  transform: scale(0.92);
+  background: radial-gradient(circle at 35% 30%, #9a1a1a 0%, #550808 60%, #200303 100%);
+  box-shadow: 0 0 40px rgba(255, 60, 60, 0.9), inset 0 0 20px rgba(255, 100, 100, 0.4);
+}
