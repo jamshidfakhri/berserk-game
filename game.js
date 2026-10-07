@@ -1,5 +1,5 @@
 // ==========================================
-//   VENGEANCE — Load + Menu + Game (English)
+//   VENGEANCE — Load + Menu + Game + Attack
 // ==========================================
 
 const GAME_WIDTH  = 320;
@@ -85,11 +85,11 @@ class LoadScene extends Phaser.Scene {
 
     this.cameras.main.setBackgroundColor('#000000');
 
-    // ----- Ground -----
+    // Ground
     this.add.rectangle(0, H - 25, W, 25, 0x050505).setOrigin(0, 0);
     this.add.rectangle(0, H - 25, W, 1, 0x1a0e08).setOrigin(0, 0);
 
-    // ----- Logs -----
+    // Logs
     const logs = [
       { x: cx - 15, y: H - 28, w: 26, h: 4, angle: -12, color: 0x1a0e08 },
       { x: cx + 15, y: H - 28, w: 26, h: 4, angle: 12, color: 0x1a0e08 },
@@ -100,14 +100,11 @@ class LoadScene extends Phaser.Scene {
       this.add.rectangle(l.x, l.y, l.w, l.h, l.color).setAngle(l.angle);
     });
 
-    // ----- Sword -----
     this.createSword(cx, H - 30);
 
-    // ----- Fire -----
     this.fireG = this.add.graphics();
     this.fireG.setDepth(1);
 
-    // ----- Loading bar -----
     const barY = H - 18;
     const barW = 100;
     const barH = 2;
@@ -118,7 +115,6 @@ class LoadScene extends Phaser.Scene {
     this.barFill = this.add.rectangle(cx - barW / 2, barY, 0, barH, 0x8b0000)
       .setOrigin(0, 0.5);
 
-    // ----- Loading sentences (English) -----
     this.sentences = [
       'Blood... only blood remains.',
       'Vengeance waits.',
@@ -131,7 +127,6 @@ class LoadScene extends Phaser.Scene {
       color: '#6a4030',
     }).setOrigin(0.5);
 
-    // ----- State -----
     this.progress = 0;
     this.elapsed = 0;
     this.duration = 2800;
@@ -155,15 +150,12 @@ class LoadScene extends Phaser.Scene {
     const guard = 0x7a4a20;
     const hilt = 0x1a0e08;
 
-    // Hilt
     g.fillStyle(hilt, 1);
     g.fillRect(-1, 6, 2, 8);
 
-    // Guard
     g.fillStyle(guard, 1);
     g.fillRect(-4, 5, 8, 2);
 
-    // Blade with bent tip to the left
     for (let i = 0; i < 28; i++) {
       const py = 5 - i;
       let px = -1;
@@ -173,7 +165,6 @@ class LoadScene extends Phaser.Scene {
       g.fillRect(px, py, 2, 1);
     }
 
-    // Blade highlight
     g.fillStyle(0xffffff, 0.35);
     for (let i = 3; i < 22; i++) {
       g.fillRect(-1, 5 - i, 1, 1);
@@ -192,7 +183,6 @@ class LoadScene extends Phaser.Scene {
     this.fireTime += delta;
     this.drawFire(this.progress);
 
-    // Sentence cycling
     this.sentenceTimer += delta;
     if (this.sentenceTimer < 200) {
       this.sentenceText.setAlpha(this.sentenceTimer / 200);
@@ -206,7 +196,6 @@ class LoadScene extends Phaser.Scene {
       this.sentenceText.setText(this.sentences[this.sentenceIdx]);
     }
 
-    // Finish
     if (this.progress >= 1 && !this.finished) {
       this.finished = true;
       this.time.delayedCall(150, () => {
@@ -253,7 +242,6 @@ class LoadScene extends Phaser.Scene {
       }
     }
 
-    // Sparks
     const sparkCount = Math.floor(3 * level);
     for (let i = 0; i < sparkCount; i++) {
       const sparkX = cx + Math.sin(t * 3 + i * 2.1) * 8;
@@ -277,7 +265,6 @@ class MenuScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor('#0a0a0a');
     this.cameras.main.fadeIn(300, 0, 0, 0);
 
-    // Title
     this.add.text(cx, cy - 30, 'VENGEANCE', {
       fontFamily: 'monospace',
       fontSize: '22px',
@@ -285,7 +272,6 @@ class MenuScene extends Phaser.Scene {
       fontStyle: 'bold',
     }).setOrigin(0.5);
 
-    // Subtitle
     this.add.text(cx, cy - 8, 'A tale written in blood', {
       fontFamily: 'monospace',
       fontSize: '7px',
@@ -293,12 +279,11 @@ class MenuScene extends Phaser.Scene {
       fontStyle: 'italic',
     }).setOrigin(0.5);
 
-    // Menu items
     const items = [
-      { text: '> New Game',     y: cy + 12 },
-      { text: '  Continue',     y: cy + 24 },
-      { text: '  Settings',     y: cy + 36 },
-      { text: '  Best Score',   y: cy + 48 },
+      { text: '> New Game',   y: cy + 12 },
+      { text: '  Continue',   y: cy + 24 },
+      { text: '  Settings',   y: cy + 36 },
+      { text: '  Best Score', y: cy + 48 },
     ];
 
     this.menuItems = [];
@@ -313,21 +298,18 @@ class MenuScene extends Phaser.Scene {
 
     this.selected = 0;
 
-    // Version
     this.add.text(cx, GAME_HEIGHT - 10, 'v0.1', {
       fontFamily: 'monospace',
       fontSize: '7px',
       color: '#444444',
     }).setOrigin(0.5);
 
-    // Hint
     this.add.text(cx, GAME_HEIGHT - 2, 'W/S + Enter', {
       fontFamily: 'monospace',
       fontSize: '6px',
       color: '#333333',
     }).setOrigin(0.5);
 
-    // Input
     this.cursors = this.input.keyboard.createCursorKeys();
     this.keys = this.input.keyboard.addKeys({
       W: Phaser.Input.Keyboard.KeyCodes.W,
@@ -361,7 +343,6 @@ class MenuScene extends Phaser.Scene {
       if (this.selected === 0) {
         this.scene.start('Game');
       }
-      // Other items: coming soon
     }
   }
 }
@@ -388,48 +369,171 @@ class GameScene extends Phaser.Scene {
 
     this.physics.add.collider(this.player, ground);
 
+    // Slash graphic (always in scene, hidden when idle)
+    this.slashG = this.add.graphics();
+    this.slashG.setDepth(10);
+
     this.cursors = this.input.keyboard.createCursorKeys();
     this.keys = this.input.keyboard.addKeys({
       A: Phaser.Input.Keyboard.KeyCodes.A,
       D: Phaser.Input.Keyboard.KeyCodes.D,
       W: Phaser.Input.Keyboard.KeyCodes.W,
       SPACE: Phaser.Input.Keyboard.KeyCodes.SPACE,
+      J: Phaser.Input.Keyboard.KeyCodes.J,
       ESC: Phaser.Input.Keyboard.KeyCodes.ESC,
+    });
+
+    // Mouse click attack
+    this.input.on('pointerdown', () => {
+      this.tryAttack();
     });
 
     this.MOVE_SPEED = 90;
     this.JUMP_VELOCITY = -280;
+
+    // Attack state
+    this.attacking = false;
+    this.attackTimer = 0;
+    this.ATTACK_DURATION = 250;   // total lock duration
+    this.SLASH_VISIBLE = 130;     // how long slash graphic shows
+    this.attackCooldown = 0;
+    this.COOLDOWN = 80;           // extra pause after attack
+
+    // Hint
+    this.add.text(6, 6, 'A/D move   Space jump   J attack   ESC menu', {
+      fontFamily: 'monospace',
+      fontSize: '7px',
+      color: '#3a3a3a',
+    }).setDepth(20);
   }
 
-  update() {
+  tryAttack() {
+    if (this.attacking) return;
+    if (this.attackCooldown > 0) return;
+    this.attacking = true;
+    this.attackTimer = 0;
+  }
+
+  update(time, delta) {
     const body = this.player.body;
     const onGround = body.blocked.down || body.touching.down;
 
+    // Attack input
+    if (Phaser.Input.Keyboard.JustDown(this.keys.J)) {
+      this.tryAttack();
+    }
+
+    // Cooldown ticking
+    if (this.attackCooldown > 0) {
+      this.attackCooldown -= delta;
+    }
+
+    // ---- Attack state machine ----
+    if (this.attacking) {
+      this.attackTimer += delta;
+
+      // Draw slash during the visible window
+      if (this.attackTimer <= this.SLASH_VISIBLE) {
+        const p = this.attackTimer / this.SLASH_VISIBLE;
+        this.drawSlash(p);
+      } else {
+        this.slashG.clear();
+      }
+
+      if (this.attackTimer >= this.ATTACK_DURATION) {
+        this.attacking = false;
+        this.attackCooldown = this.COOLDOWN;
+        this.slashG.clear();
+      }
+    }
+
+    // ---- Movement ----
     const left  = this.cursors.left.isDown  || this.keys.A.isDown;
     const right = this.cursors.right.isDown || this.keys.D.isDown;
 
+    // Slow down while attacking (souls-like weight)
+    const speedMul = this.attacking ? 0.25 : 1;
+    const speed = this.MOVE_SPEED * speedMul;
+
     if (left && !right) {
-      body.setVelocityX(-this.MOVE_SPEED);
+      body.setVelocityX(-speed);
       this.player.setFlipX(true);
     } else if (right && !left) {
-      body.setVelocityX(this.MOVE_SPEED);
+      body.setVelocityX(speed);
       this.player.setFlipX(false);
     } else {
       body.setVelocityX(0);
     }
 
+    // ---- Jump (blocked while attacking) ----
     const jumpPressed =
       Phaser.Input.Keyboard.JustDown(this.cursors.space) ||
       Phaser.Input.Keyboard.JustDown(this.keys.SPACE) ||
       Phaser.Input.Keyboard.JustDown(this.keys.W);
 
-    if (jumpPressed && onGround) {
+    if (jumpPressed && onGround && !this.attacking) {
       body.setVelocityY(this.JUMP_VELOCITY);
     }
 
-    // ESC → back to menu
+    // ---- Back to menu ----
     if (Phaser.Input.Keyboard.JustDown(this.keys.ESC)) {
       this.scene.start('Menu');
+    }
+  }
+
+  drawSlash(progress) {
+    const g = this.slashG;
+    g.clear();
+
+    const px = this.player.x;
+    const py = this.player.y;
+    const dir = this.player.flipX ? -1 : 1;
+
+    // Size: grows then shrinks (sin curve) → feels like a swipe
+    const grow = Math.sin(progress * Math.PI);
+    const outerR = 6 + 20 * grow;
+    const innerR = 3 + 8  * grow;
+
+    // Alpha: fades out toward the end
+    const alpha = Math.max(0, 1 - progress * 0.7);
+
+    // Fan sweep: from -55° to +55°
+    const startA = -0.95;
+    const endA   =  0.95;
+    const cols   = 14;
+
+    for (let i = 0; i <= cols; i++) {
+      const a = startA + (endA - startA) * (i / cols);
+
+      // Outer bright edge
+      const ox = px + Math.cos(a) * outerR * dir;
+      const oy = py + Math.sin(a) * outerR;
+
+      // Inner dim fill
+      const rsteps = Math.max(1, Math.floor(outerR - innerR));
+      for (let s = 0; s < rsteps; s++) {
+        const r = innerR + s;
+        const ix = px + Math.cos(a) * r * dir;
+        const iy = py + Math.sin(a) * r;
+
+        // Fill: dimmer toward inner
+        const fillAlpha = alpha * (0.35 + 0.4 * (s / rsteps));
+        g.fillStyle(0xaaaaaa, fillAlpha);
+        g.fillRect(Math.round(ix), Math.round(iy), 1, 1);
+      }
+
+      // Bright outer edge
+      g.fillStyle(0xffffff, alpha);
+      g.fillRect(Math.round(ox), Math.round(oy), 2, 2);
+    }
+
+    // Tiny spark at the tip of the blade
+    if (progress > 0.15 && progress < 0.7) {
+      const tipA = (dir > 0 ? endA : startA);
+      const tipX = px + Math.cos(tipA) * outerR * dir;
+      const tipY = py + Math.sin(tipA) * outerR;
+      g.fillStyle(0xffdd88, alpha);
+      g.fillRect(Math.round(tipX) - 1, Math.round(tipY) - 1, 3, 3);
     }
   }
 }
