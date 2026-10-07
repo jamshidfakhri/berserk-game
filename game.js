@@ -9,12 +9,65 @@ function resize() {
 window.addEventListener('resize', resize);
 resize();
 
+// ===== صدا (Web Audio API) =====
+let audioCtx = null;
+function initAudio() {
+  if (!audioCtx) {
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    } catch (e) {}
+  }
+}
+function playSound(type) {
+  if (!audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  const now = audioCtx.currentTime;
+  if (type === 'slash') {
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(800, now);
+    osc.frequency.exponentialRampToValueAtTime(200, now + 0.1);
+    gain.gain.setValueAtTime(0.15, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+    osc.start(now); osc.stop(now + 0.15);
+  } else if (type === 'kill') {
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(150, now);
+    osc.frequency.exponentialRampToValueAtTime(50, now + 0.2);
+    gain.gain.setValueAtTime(0.2, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+    osc.start(now); osc.stop(now + 0.25);
+  } else if (type === 'hurt') {
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(120, now);
+    osc.frequency.exponentialRampToValueAtTime(60, now + 0.2);
+    gain.gain.setValueAtTime(0.25, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+    osc.start(now); osc.stop(now + 0.25);
+  } else if (type === 'boss') {
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(80, now);
+    osc.frequency.linearRampToValueAtTime(40, now + 0.5);
+    gain.gain.setValueAtTime(0.3, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+    osc.start(now); osc.stop(now + 0.6);
+  }
+}
+
+// ===== بهترین امتیاز =====
+let bestScore = parseInt(localStorage.getItem('berserkBest') || '0');
+document.getElementById('best').textContent = bestScore;
+
 // ===== وضعیت =====
 let gameRunning = true;
+let paused = false;
 let score = 0;
 let wave = 1;
 let waveEnemiesLeft = 0;
-let waveBreakTimer = 0;     // مکث بین موج‌ها (فریم)
+let waveBreakTimer = 0;
 let shakeAmount = 0;
 let rage = 0;
 let berserkMode = false;
@@ -31,20 +84,33 @@ let enemies = [];
 let particles = [];
 let projectiles = [];
 
-// ===== شروع موج =====
+// ===== انواع دشمن =====
+const ENEMY_TYPES = {
+  light:  { r: 12, speedMult: 1.4, hp: 1, score: 5,  color: '#a03030', damage: 8  },
+  normal: { r: 14, speedMult: 1.0, hp: 1, score: 10, color: '#8b2020', damage: 10 },
+  heavy:  { r: 20, speedMult: 0.7, hp: 3, score: 25, color: '#5a0808', damage: 20 },
+};
+
+function pickEnemyType() {
+  const r = Math.random();
+  if (wave < 2) return 'light';
+  if (r < 0.3) return 'light';
+  if (r < 0.85) return 'normal';
+  return 'heavy';
+}
+
 function startWave(n) {
   wave = n;
   document.getElementById('wave').textContent = wave;
   bossActive = false;
 
   if (n % 5 === 0) {
-    // موج باس
     spawnBoss();
     bossActive = true;
     waveEnemiesLeft = 1;
+    playSound('boss');
   } else {
     waveEnemiesLeft = 3 + Math.floor(n * 1.5);
-    // اسپاون اولیه چند تا
     const initial = Math.min(waveEnemiesLeft, 3);
     for (let i = 0; i < initial; i++) spawnEnemy();
     waveEnemiesLeft -= initial;
@@ -52,6 +118,8 @@ function startWave(n) {
 }
 
 function spawnEnemy() {
+  const type = pickEnemyType();
+  const t = ENEMY_TYPES[type];
   const side = Math.floor(Math.random() * 4);
   let x, y;
   if (side === 0) { x = Math.random() * W; y = -30; }
@@ -59,11 +127,15 @@ function spawnEnemy() {
   else if (side === 2) { x = Math.random() * W; y = H + 30; }
   else { x = -30; y = Math.random() * H; }
   enemies.push({
-    x, y, r: 14,
-    speed: 1 + wave * 0.12,
+    x, y, r: t.r,
+    speed: (1 + wave * 0.12) * t.speedMult,
     angle: Math.random() * Math.PI * 2,
-    hp: 1, maxHp: 1,
+    hp: t.hp, maxHp: t.hp,
     isBoss: false,
+    type: type,
+    color: t.color,
+    scoreValue: t.score,
+    damage: t.damage,
     shootTimer: 0,
   });
 }
@@ -82,6 +154,10 @@ function spawnBoss() {
     angle: 0,
     hp: hp, maxHp: hp,
     isBoss: true,
+    type: 'boss',
+    color: '#5a0a0a',
+    scoreValue: 100,
+    damage: 20,
     shootTimer: 120,
   });
 }
@@ -114,6 +190,8 @@ let attackTouchId = null;
 
 canvas.addEventListener('touchstart', e => {
   e.preventDefault();
+  initAudio();
+  if (paused || !gameRunning) return;
   for (const t of e.touches) {
     if (t.clientY > H - 130 && t.clientX < 160) {
       attack();
@@ -143,8 +221,10 @@ canvas.addEventListener('touchend', e => {
   }
 }, { passive: false });
 
+canvas.addEventListener('mousedown', () => initAudio());
+
 function attack() {
-  if (player.attackCooldown > 0 || !gameRunning) return;
+  if (player.attackCooldown > 0 || !gameRunning || paused) return;
   let angle = player.attackAngle;
   if (touchStart && touchCurrent) {
     angle = Math.atan2(touchCurrent.y - touchStart.y, touchCurrent.x - touchStart.x);
@@ -152,11 +232,19 @@ function attack() {
   player.attackAngle = angle;
   player.attackTimer = berserkMode ? 18 : 12;
   player.attackCooldown = berserkMode ? 10 : 20;
+  playSound('slash');
+}
+
+function togglePause() {
+  if (!gameRunning) return;
+  paused = !paused;
+  document.getElementById('pauseBtn').textContent = paused ? '▶️' : '⏸️';
+  if (!paused) loop();
 }
 
 // ===== به‌روزرسانی =====
 function update() {
-  if (!gameRunning) return;
+  if (!gameRunning || paused) return;
 
   const sp = berserkMode ? player.speed * 1.6 : player.speed;
 
@@ -191,21 +279,16 @@ function update() {
     }
   }
 
-  // دنباله
   player.trail.push({ x: player.x, y: player.y, life: 15 });
   if (player.trail.length > 15) player.trail.shift();
   player.trail.forEach(t => t.life--);
   player.trail = player.trail.filter(t => t.life > 0);
 
-  // ===== مکث بین موج‌ها =====
   if (waveBreakTimer > 0) {
     waveBreakTimer--;
-    if (waveBreakTimer === 0) {
-      startWave(wave + 1);
-    }
+    if (waveBreakTimer === 0) startWave(wave + 1);
   }
 
-  // ===== اسپاون تدریجی دشمن‌های باقی‌مانده =====
   if (waveEnemiesLeft > 0 && !bossActive && waveBreakTimer === 0) {
     if (Math.random() < 0.03) {
       spawnEnemy();
@@ -213,21 +296,18 @@ function update() {
     }
   }
 
-  // ===== دشمن‌ها =====
   for (let i = enemies.length - 1; i >= 0; i--) {
     const e = enemies[i];
-    e.angle += e.isBoss ? 0.03 : 0.1;
+    e.angle += e.isBoss ? 0.03 : (e.type === 'heavy' ? 0.05 : 0.1);
     const dx = player.x - e.x;
     const dy = player.y - e.y;
     const dist = Math.hypot(dx, dy);
 
     if (e.isBoss) {
-      // باس فقط تا یه فاصله تعقیب می‌کنه
       if (dist > 150) {
         e.x += (dx / dist) * e.speed;
         e.y += (dy / dist) * e.speed;
       }
-      // شلیک گلوله
       e.shootTimer--;
       if (e.shootTimer <= 0) {
         e.shootTimer = 100;
@@ -246,12 +326,13 @@ function update() {
       }
     }
 
-    // برخورد دشمن با بازیکن
     if (dist < e.r + player.r) {
-      player.hp -= e.isBoss ? 20 : (berserkMode ? 5 : 10);
+      const dmg = berserkMode ? Math.floor(e.damage / 2) : e.damage;
+      player.hp -= dmg;
       spawnParticles(e.x, e.y, '#8b2020', e.isBoss ? 30 : 15);
       shakeAmount = e.isBoss ? 15 : 8;
-      if (!e.isBoss) {
+      playSound('hurt');
+      if (!e.isBoss && e.type !== 'heavy') {
         enemies.splice(i, 1);
       }
       document.getElementById('hp').textContent = Math.max(0, player.hp);
@@ -259,7 +340,6 @@ function update() {
       continue;
     }
 
-    // برخورد شمشیر
     if (player.attackTimer > 0) {
       const swordLen = berserkMode ? 90 : 60;
       const sx = player.x + Math.cos(player.attackAngle) * swordLen;
@@ -269,10 +349,10 @@ function update() {
         e.hp--;
         spawnParticles(e.x, e.y, '#c02020', 8);
         if (e.hp <= 0) {
-          // دشمن مرد
           spawnParticles(e.x, e.y, '#c02020', e.isBoss ? 60 : 20);
           shakeAmount = e.isBoss ? 20 : 6;
-          score += e.isBoss ? 100 : 10;
+          score += e.scoreValue;
+          playSound('kill');
           if (!berserkMode) {
             rage = Math.min(100, rage + (e.isBoss ? 40 : 8));
             if (rage >= 100) {
@@ -282,45 +362,37 @@ function update() {
           }
           document.getElementById('score').textContent = score;
           enemies.splice(i, 1);
-
-          // اگه باس بود، موج تمومه
-          if (e.isBoss) {
-            waveBreakTimer = 120;
-          }
+          if (e.isBoss) waveBreakTimer = 120;
         }
       }
     }
   }
 
-  // ===== گلوله‌ها =====
   for (let i = projectiles.length - 1; i >= 0; i--) {
     const p = projectiles[i];
     p.x += p.vx;
     p.y += p.vy;
-
     if (p.x < -20 || p.x > W + 20 || p.y < -20 || p.y > H + 20) {
       projectiles.splice(i, 1);
       continue;
     }
-
     const dx = player.x - p.x;
     const dy = player.y - p.y;
     if (Math.hypot(dx, dy) < p.r + player.r) {
       player.hp -= 8;
       spawnParticles(p.x, p.y, '#ff4040', 10);
       shakeAmount = 8;
+      playSound('hurt');
       projectiles.splice(i, 1);
       document.getElementById('hp').textContent = Math.max(0, player.hp);
       if (player.hp <= 0) { gameOver(); return; }
     }
   }
 
-  // ===== پایان موج =====
   if (!bossActive && enemies.length === 0 && waveEnemiesLeft === 0 && waveBreakTimer === 0) {
     waveBreakTimer = 120;
   }
 
-  // ===== ذرات =====
   for (let i = particles.length - 1; i >= 0; i--) {
     const p = particles[i];
     p.x += p.vx; p.y += p.vy;
@@ -343,7 +415,6 @@ function draw() {
   ctx.fillStyle = berserkMode ? '#2a0808' : '#1a0f0f';
   ctx.fillRect(-20, -20, W + 40, H + 40);
 
-  // دنباله
   player.trail.forEach(t => {
     ctx.beginPath();
     ctx.arc(t.x, t.y, player.r * (t.life / 15), 0, Math.PI * 2);
@@ -351,7 +422,6 @@ function draw() {
     ctx.fill();
   });
 
-  // ذرات
   particles.forEach(p => {
     ctx.globalAlpha = p.life / p.maxLife;
     ctx.fillStyle = p.color;
@@ -361,7 +431,6 @@ function draw() {
   });
   ctx.globalAlpha = 1;
 
-  // گلوله‌ها
   projectiles.forEach(p => {
     ctx.beginPath();
     ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
@@ -372,7 +441,6 @@ function draw() {
     ctx.stroke();
   });
 
-  // دشمن‌ها
   enemies.forEach(e => {
     ctx.save();
     ctx.translate(e.x, e.y);
@@ -382,16 +450,15 @@ function draw() {
     ctx.lineTo(e.r * 0.8, e.r * 0.7);
     ctx.lineTo(-e.r * 0.8, e.r * 0.7);
     ctx.closePath();
-    ctx.fillStyle = e.isBoss ? '#5a0a0a' : '#8b2020';
+    ctx.fillStyle = e.color;
     ctx.fill();
     ctx.strokeStyle = e.isBoss ? '#ff2020' : '#3a0808';
     ctx.lineWidth = e.isBoss ? 4 : 2;
     ctx.stroke();
     ctx.restore();
 
-    // نوار جان باس
-    if (e.isBoss) {
-      const bw = 80;
+    if (e.isBoss || e.type === 'heavy') {
+      const bw = e.isBoss ? 80 : 40;
       const bx = e.x - bw / 2;
       const by = e.y - e.r - 18;
       ctx.fillStyle = 'rgba(0,0,0,0.6)';
@@ -401,7 +468,6 @@ function draw() {
     }
   });
 
-  // شمشیر
   if (player.attackTimer > 0) {
     const swordLen = berserkMode ? 90 : 60;
     const sx = player.x + Math.cos(player.attackAngle) * swordLen;
@@ -422,7 +488,16 @@ function draw() {
     ctx.fill();
   }
 
-  // بازیکن
+  // هاله بازیکن
+  const haloR = berserkMode ? 30 : 22;
+  const haloGrad = ctx.createRadialGradient(player.x, player.y, player.r, player.x, player.y, haloR);
+  haloGrad.addColorStop(0, berserkMode ? 'rgba(255, 80, 80, 0.4)' : 'rgba(192, 160, 96, 0.3)');
+  haloGrad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.beginPath();
+  ctx.arc(player.x, player.y, haloR, 0, Math.PI * 2);
+  ctx.fillStyle = haloGrad;
+  ctx.fill();
+
   ctx.save();
   ctx.translate(player.x, player.y);
   ctx.rotate(player.attackAngle);
@@ -438,7 +513,6 @@ function draw() {
   ctx.stroke();
   ctx.restore();
 
-  // جوی‌استیک
   if (touchStart && touchCurrent) {
     ctx.beginPath();
     ctx.arc(touchStart.x, touchStart.y, 60, 0, Math.PI * 2);
@@ -451,8 +525,7 @@ function draw() {
     ctx.fill();
   }
 
-  // دکمه حمله
-  if (gameRunning) {
+  if (gameRunning && !paused) {
     ctx.beginPath();
     ctx.arc(75, H - 75, 55, 0, Math.PI * 2);
     ctx.fillStyle = berserkMode ? 'rgba(255, 60, 60, 0.5)' : 'rgba(160, 32, 32, 0.4)';
@@ -467,14 +540,12 @@ function draw() {
     ctx.fillText('⚔️', 75, H - 75);
   }
 
-  // اوورلی قرمز برزرک
   if (berserkMode) {
     const pulse = 0.15 + Math.sin(Date.now() / 100) * 0.05;
     ctx.fillStyle = `rgba(200, 20, 20, ${pulse})`;
     ctx.fillRect(0, 0, W, H);
   }
 
-  // متن مکث بین موج‌ها
   if (waveBreakTimer > 0) {
     ctx.fillStyle = 'rgba(0,0,0,0.5)';
     ctx.fillRect(0, H / 2 - 40, W, 80);
@@ -485,19 +556,35 @@ function draw() {
     ctx.fillText(`موج ${wave + 1} در راه است...`, W / 2, H / 2);
   }
 
+  if (paused) {
+    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#d4c5a0';
+    ctx.font = 'bold 36px Tahoma';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('مکث', W / 2, H / 2);
+  }
+
   ctx.restore();
 }
 
 function loop() {
   update();
   draw();
-  if (gameRunning) requestAnimationFrame(loop);
+  if (gameRunning && !paused) requestAnimationFrame(loop);
 }
 
 function gameOver() {
   gameRunning = false;
+  if (score > bestScore) {
+    bestScore = score;
+    localStorage.setItem('berserkBest', bestScore);
+    document.getElementById('best').textContent = bestScore;
+  }
   document.getElementById('finalScore').textContent = score;
   document.getElementById('finalWave').textContent = wave;
+  document.getElementById('bestScore').textContent = bestScore;
   document.getElementById('gameover').classList.remove('hidden');
 }
 
@@ -509,6 +596,8 @@ function restart() {
   enemies = []; particles = []; projectiles = [];
   score = 0; rage = 0; berserkMode = false; berserkTimer = 0;
   waveBreakTimer = 0; waveEnemiesLeft = 0; bossActive = false;
+  paused = false;
+  document.getElementById('pauseBtn').textContent = '⏸️';
   gameRunning = true;
   document.getElementById('hp').textContent = 100;
   document.getElementById('score').textContent = 0;
