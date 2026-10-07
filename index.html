@@ -24,6 +24,11 @@
   <!-- ناحیه بازی (۶۵٪ بالا) -->
   <div id="gameArea">
     <canvas id="gameCanvas"></canvas>
+
+    <!-- دکمه سه‌خط بالا چپ -->
+    <button id="hamburgerBtn" aria-label="منو">
+      <span></span><span></span><span></span>
+    </button>
   </div>
 
   <!-- ناحیه کنترل (۳۵٪ پایین) -->
@@ -39,6 +44,39 @@
   </div>
 
 </div>
+
+<!-- ===== منوی کشویی ===== -->
+<div id="sideMenu" class="side-menu hidden">
+  <div class="side-menu-inner">
+    <h2 class="side-menu-title">منو</h2>
+
+    <button class="side-menu-btn" data-action="save">
+      💾 <span>ذخیره بازی</span>
+    </button>
+    <button class="side-menu-btn" data-action="settings">
+      ⚙️ <span>تنظیمات</span>
+    </button>
+    <button class="side-menu-btn danger" data-action="exit">
+      🚪 <span>خروج به منو</span>
+    </button>
+
+    <button id="sideMenuClose" class="side-menu-close">✕ بستن</button>
+  </div>
+</div>
+
+<!-- ===== دیالوگ تأیید ===== -->
+<div id="confirmDialog" class="dialog-overlay hidden">
+  <div class="dialog-box">
+    <p id="confirmText">مطمئنی؟</p>
+    <div class="dialog-buttons">
+      <button id="confirmYes" class="dialog-btn yes">بله</button>
+      <button id="confirmNo" class="dialog-btn no">خیر</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== پیام کوتاه (Toast) ===== -->
+<div id="toast" class="toast hidden"></div>
 
 <script src="game.js"></script>
 </body>
