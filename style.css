@@ -5,6 +5,7 @@ html, body {
   height: 100%;
   background: #000;
   overflow: hidden;
+  font-family: monospace;
 }
 
 #game {
@@ -21,4 +22,8 @@ html, body {
   image-rendering: -moz-crisp-edges !important;
   -ms-interpolation-mode: nearest-neighbor;
   display: block;
+  width: auto !important;
+  height: auto !important;
+  max-width: 100%;
+  max-height: 100%;
 }
